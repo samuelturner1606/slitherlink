@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Slitherlink</title>
+		<style>
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: black;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas></canvas>
+		<script>
+			(function slitherlinkApp() {
+				/* Structure:
+				1) Local Variables
+				2) Initialisation
+				3) Animation
+				4) Function Declarations */
+
+				// Local Variables //
+
+				// Canvas resizing
+				const context = document.querySelector("canvas").getContext("2d");
+				context.canvas.width = window.innerWidth;
+				context.canvas.height = window.innerHeight * 0.8;
+				const canvasWidth = context.canvas.width;
+				const canvasHeight = context.canvas.height;
+
+				// Animation //
+				debugger;
+				(function appLoop() {
+					window.requestAnimationFrame(appLoop);
+					update();
+				})();
+
+				// Function Declarations //
+
+				/* Chronological order of first execution:
+
+				Initialisation
+				1)
+
+				Animation
+				2)
+				*/
+
+				function update() {}
+			})();
+		</script>
+	</body>
+</html>
