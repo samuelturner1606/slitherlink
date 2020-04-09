@@ -21,9 +21,10 @@
 			(function slitherlinkApp() {
 				/* Structure:
 				1) Local Variables
-				2) Initialisation
-				3) Animation
-				4) Function Declarations */
+				2) Class Declarations
+				3) Function Declarations
+				4) Initialisation
+				5) Animation */
 
 				// Local Variables //
 
@@ -62,34 +63,131 @@
 				const maxVerticalSquares = Math.floor(window.innerHeight / rows);
 				const squareWidth = Math.min(maxHorizontalSquares, maxVerticalSquares);
 				const dotRadius = squareWidth / 8;
-				const ctx = document.querySelector("canvas").getContext("2d");
+				const ctx = document.querySelector('canvas').getContext('2d');
 				[ctx.canvas.width, ctx.canvas.height] = [
 					columns * squareWidth + 2 * dotRadius,
 					rows * squareWidth + 2 * dotRadius,
 				];
 
-				// Canvas text
-				ctx.font = String(0.75 * squareWidth) + "px Arial";
-				const textHeight = ctx.measureText("0123").actualBoundingBoxAscent; // actual height of text, unlike font size
-				ctx.textAlign = "center";
-				ctx.fillStyle = "white";
+				// Text
+				ctx.textAlign = 'center';
+				ctx.font = String(0.75 * squareWidth) + 'px Arial';
+				const textHeight = ctx.measureText('0123').actualBoundingBoxAscent; // actual height of text, unlike font size
+
+				// Lines and Crosses
+				ctx.fillStyle = 'white';
+				ctx.strokeStyle = 'white';
+				ctx.lineWidth = dotRadius / 2;
+				const Lines = [];
+				const Crosses = [];
+
+				// Class Declarations //
+
+				class Line {
+					constructor(start = [], end = []) {
+						this.start = start;
+						this.middle = [];
+						this.end = end;
+						Lines.push(this);
+						drawLine(start, end);
+					}
+					extend(end = []) {
+						if (arguments.length == 1) {
+							this.middle.push(this.end);
+							drawLine(this.end, end);
+							this.end = end;
+						} else {
+							for (let i = 0; i < arguments.length; i++) {
+								this.middle.push(this.end);
+								drawLine(this.end, arguments[i]);
+								this.end = arguments[i];
+							}
+						}
+					}
+				}
+
+				class Cross {
+					constructor(start = [], end = []) {
+						this.start = start;
+						this.middle = [];
+						this.end = end;
+						Crosses.push(this);
+						drawCross(start, end);
+					}
+					extend(end = []) {
+						if (arguments.length == 1) {
+							this.middle.push(this.end);
+							drawCross(this.end, end);
+							this.end = end;
+						} else {
+							for (let i = 0; i < arguments.length; i++) {
+								this.middle.push(this.end);
+								drawCross(this.end, arguments[i]);
+								this.end = arguments[i];
+							}
+						}
+					}
+				}
+
+				// Function Declarations //
+
+				function transformToCanvas(x, y) {
+					return [x * squareWidth + dotRadius, y * squareWidth + dotRadius];
+				}
+
+				function drawLine(start = [], end = []) {
+					const [a, b] = transformToCanvas(start[0], start[1]);
+					const [c, d] = transformToCanvas(end[0], end[1]);
+					ctx.beginPath();
+					ctx.moveTo(a, b);
+					ctx.lineTo(c, d);
+					ctx.stroke();
+				}
+
+				function drawCross(start = [], end = []) {
+					const [x, y] = transformToCanvas(
+						(start[0] + end[0]) / 2,
+						(start[1] + end[1]) / 2
+					);
+					ctx.beginPath();
+					ctx.moveTo(x - dotRadius, y - dotRadius);
+					ctx.lineTo(x + dotRadius, y + dotRadius);
+					ctx.moveTo(x - dotRadius, y + dotRadius);
+					ctx.lineTo(x + dotRadius, y - dotRadius);
+					ctx.stroke();
+				}
+
+				function drawDot(i, j) {
+					const [x, y] = transformToCanvas(i, j);
+					ctx.beginPath();
+					ctx.arc(x, y, dotRadius, 0, Math.PI * 2, false);
+					ctx.fill();
+				}
+
+				function drawText(i, j, text) {
+					const [x, y] = transformToCanvas(i, j);
+					ctx.fillText(
+						String(text),
+						x + squareWidth / 2,
+						y + (textHeight + squareWidth) / 2
+					);
+				}
 
 				// Initialisation //
 
 				// Draw grid and numbers
 				for (let i = 0; i < columns + 1; i++) {
 					for (let j = 0; j < rows + 1; j++) {
-						const [x, y] = transformToCanvas(i, j);
-						drawDot(x, y);
+						drawDot(i, j);
 						if (i < columns && j < rows) {
-							const [valueX, valueY] = transformToCanvas(i, j);
-							const value = puzzle[i][j];
-							if (value != undefined) {
-								ctx.fillText(
-									String(value),
-									valueX + squareWidth / 2,
-									valueY + (textHeight + squareWidth) / 2
-								);
+							const number = puzzle[i][j];
+							if (number != undefined) {
+								drawText(i, j, number);
+								if (number == 0) {
+									console.log('0');
+									const zero = new Cross([i, j], [i + 1, j]);
+									zero.extend([i + 1, j + 1], [i, j + 1], [i, j]);
+								}
 							}
 						}
 					}
@@ -97,33 +195,21 @@
 
 				// Animation //
 
-				// (function appLoop() {
-				// 	window.requestAnimationFrame(appLoop);
-				// 	update();
-				// })();
+				/* Useful code for future:
 
-				// Function Declarations //
+				// animation loop //
+				(function appLoop() {
+					window.requestAnimationFrame(appLoop);
+					update();
+				})();
 
-				/* Chronological order of first execution:
+				// remove elements from array //
+				const index = array.indexOf(element);
+				if (index > -1) {
+					array.splice(index, 1);
+				}
 
-				Initialisation
-				1) transformToCanvas()
-				2) drawDot()
-
-
-				Animation
-				)
 				*/
-
-				//function update() {}
-				function transformToCanvas(x, y) {
-					return [x * squareWidth + dotRadius, y * squareWidth + dotRadius];
-				}
-				function drawDot(x, y) {
-					ctx.beginPath();
-					ctx.arc(x, y, dotRadius, 0, Math.PI * 2, false);
-					ctx.fill();
-				}
 			})();
 		</script>
 	</body>
